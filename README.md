@@ -1,4 +1,4 @@
-# Pg::Taggable
+# PgTaggable
 A simple tagging gem for Rails using PostgreSQL array.
 
 ## Installation
