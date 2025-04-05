@@ -53,6 +53,13 @@ jobs:
           ruby-version: ruby-3.3.6
           bundler-cache: true
 
+      - name: Setup database
+        env:
+          RAILS_ENV: test
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432
+          # REDIS_URL: redis://localhost:6379/0
+        run: cd spec/dummy && rails db:setup
+
       - name: Run tests
         env:
           RAILS_ENV: test
