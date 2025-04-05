@@ -27,12 +27,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_05_014623) do
     t.uuid "uuids", default: [], array: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["citexts"], name: "index_posts_on_citexts", using: :gin
-    t.index ["integers"], name: "index_posts_on_integers", using: :gin
-    t.index ["strings"], name: "index_posts_on_strings", using: :gin
-    t.index ["texts"], name: "index_posts_on_texts", using: :gin
-    t.index ["user_id"], name: "index_posts_on_user_id"
-    t.index ["uuids"], name: "index_posts_on_uuids", using: :gin
+    t.index [ "citexts" ], name: "index_posts_on_citexts", using: :gin
+    t.index [ "integers" ], name: "index_posts_on_integers", using: :gin
+    t.index [ "strings" ], name: "index_posts_on_strings", using: :gin
+    t.index [ "texts" ], name: "index_posts_on_texts", using: :gin
+    t.index [ "user_id" ], name: "index_posts_on_user_id"
+    t.index [ "uuids" ], name: "index_posts_on_uuids", using: :gin
   end
 
   create_table "users", force: :cascade do |t|

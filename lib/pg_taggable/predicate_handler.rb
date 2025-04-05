@@ -15,7 +15,7 @@ module PgTaggable
         bind_param = Arel::Nodes::BindParam.new(query_attribute)
         if operator == '='
           operator = '@>'
-          Arel::Nodes::NamedFunction.new('ARRAY_LENGTH', [attribute, 1]).eq(query.size).and(
+          Arel::Nodes::NamedFunction.new('ARRAY_LENGTH', [ attribute, 1 ]).eq(query.size).and(
             Arel::Nodes::InfixOperation.new(operator, attribute, bind_param)
           )
         else
