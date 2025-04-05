@@ -175,6 +175,40 @@ Post.count_tags
 Post.tags.group(:tag).count
 ```
 
+### Case Insensitive
+If you use `string` type, it is case sensitive.
+```Ruby
+# tags is string[]
+post = Post.create(tags: ['food', 'travel', 'Food'])
+post.tags
+# => ['food', 'travel', 'Food']
+```
+
+If you want case insensitive, you need to use `citext`
+```Ruby
+class CreatePosts < ActiveRecord::Migration[8.0]
+  enable_extension('citext') unless extensions.include?('citext')
+
+  def change
+    create_table :posts do |t|
+      t.citext :tags, array: true, default: []
+
+      t.timestamps
+
+      t.index :tags, using: 'gin'
+    end
+  end
+end
+```
+
+You will get the diffent result
+```Ruby
+# tags is citext[]
+post = Post.create(tags: ['food', 'travel', 'Food'])
+post.tags
+# => ['food', 'travel']
+```
+
 ## License
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
 
