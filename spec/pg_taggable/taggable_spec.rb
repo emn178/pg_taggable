@@ -19,81 +19,86 @@ describe PgTaggable::Taggable do
     TestPost.create(user_id: 2, title: 'B', column => [ tags[1], tags[2] ])
   end
 
-  shared_examples 'any_tags' do |column|
+  shared_examples 'any_tags' do |column, where_method|
     let(:where_key) { "any_#{column}" }
     let(:tags) { column == 'integers' ? integer_tags : uuid_tags }
 
     before { setup(column, tags) }
 
-    it { expect(TestPost.where(where_key => [ tags[0] ]).pluck(:title).sort).to eq %w[A] }
-    it { expect(TestPost.where(where_key => [ tags[1] ]).pluck(:title).sort).to eq %w[A B] }
-    it { expect(TestPost.where(where_key => [ tags[2] ]).pluck(:title).sort).to eq %w[B] }
-    it { expect(TestPost.where(where_key => [ tags[3] ]).pluck(:title).sort).to eq %w[] }
-    it { expect(TestPost.where(where_key => [ tags[0], tags[1] ]).pluck(:title).sort).to eq %w[A B] }
-    it { expect(TestPost.where(where_key => [ tags[1], tags[2] ]).pluck(:title).sort).to eq %w[A B] }
-    it { expect(TestPost.where(where_key => [ tags[2], tags[3] ]).pluck(:title).sort).to eq %w[B] }
-    it { expect(TestPost.where(where_key => [ tags[3], tags[4] ]).pluck(:title).sort).to eq %w[] }
-    it { expect(TestPost.where(where_key => [ tags[0], tags[1], tags[2] ]).pluck(:title).sort).to eq %w[A B] }
-    it { expect(TestPost.where(where_key => [ tags[1], tags[2], tags[3] ]).pluck(:title).sort).to eq %w[A B] }
+    it { expect(where_method.call(where_key, [ tags[0] ]).pluck(:title).sort).to eq %w[A] }
+    it { expect(where_method.call(where_key, [ tags[1] ]).pluck(:title).sort).to eq %w[A B] }
+    it { expect(where_method.call(where_key, [ tags[2] ]).pluck(:title).sort).to eq %w[B] }
+    it { expect(where_method.call(where_key, [ tags[3] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[0], tags[1] ]).pluck(:title).sort).to eq %w[A B] }
+    it { expect(where_method.call(where_key, [ tags[1], tags[2] ]).pluck(:title).sort).to eq %w[A B] }
+    it { expect(where_method.call(where_key, [ tags[2], tags[3] ]).pluck(:title).sort).to eq %w[B] }
+    it { expect(where_method.call(where_key, [ tags[3], tags[4] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[0], tags[1], tags[2] ]).pluck(:title).sort).to eq %w[A B] }
+    it { expect(where_method.call(where_key, [ tags[1], tags[2], tags[3] ]).pluck(:title).sort).to eq %w[A B] }
   end
 
-  shared_examples 'all_tags' do |column|
+  shared_examples 'all_tags' do |column, where_method|
     let(:where_key) { "all_#{column}" }
     let(:tags) { column == 'integers' ? integer_tags : uuid_tags }
 
     before { setup(column, tags) }
 
-    it { expect(TestPost.where(where_key => [ tags[0] ]).pluck(:title).sort).to eq %w[A] }
-    it { expect(TestPost.where(where_key => [ tags[1] ]).pluck(:title).sort).to eq %w[A B] }
-    it { expect(TestPost.where(where_key => [ tags[2] ]).pluck(:title).sort).to eq %w[B] }
-    it { expect(TestPost.where(where_key => [ tags[3] ]).pluck(:title).sort).to eq %w[] }
-    it { expect(TestPost.where(where_key => [ tags[0], tags[1] ]).pluck(:title).sort).to eq %w[A] }
-    it { expect(TestPost.where(where_key => [ tags[1], tags[2] ]).pluck(:title).sort).to eq %w[B] }
-    it { expect(TestPost.where(where_key => [ tags[2], tags[3] ]).pluck(:title).sort).to eq %w[] }
-    it { expect(TestPost.where(where_key => [ tags[3], tags[4] ]).pluck(:title).sort).to eq %w[] }
-    it { expect(TestPost.where(where_key => [ tags[0], tags[1], tags[2] ]).pluck(:title).sort).to eq %w[] }
-    it { expect(TestPost.where(where_key => [ tags[1], tags[2], tags[3] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[0] ]).pluck(:title).sort).to eq %w[A] }
+    it { expect(where_method.call(where_key, [ tags[1] ]).pluck(:title).sort).to eq %w[A B] }
+    it { expect(where_method.call(where_key, [ tags[2] ]).pluck(:title).sort).to eq %w[B] }
+    it { expect(where_method.call(where_key, [ tags[3] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[0], tags[1] ]).pluck(:title).sort).to eq %w[A] }
+    it { expect(where_method.call(where_key, [ tags[1], tags[2] ]).pluck(:title).sort).to eq %w[B] }
+    it { expect(where_method.call(where_key, [ tags[2], tags[3] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[3], tags[4] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[0], tags[1], tags[2] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[1], tags[2], tags[3] ]).pluck(:title).sort).to eq %w[] }
   end
 
-  shared_examples 'tags_in' do |column|
+  shared_examples 'tags_in' do |column, where_method|
     let(:where_key) { "#{column}_in" }
     let(:tags) { column == 'integers' ? integer_tags : uuid_tags }
 
     before { setup(column, tags) }
 
-    it { expect(TestPost.where(where_key => [ tags[0] ]).pluck(:title).sort).to eq %w[] }
-    it { expect(TestPost.where(where_key => [ tags[1] ]).pluck(:title).sort).to eq %w[] }
-    it { expect(TestPost.where(where_key => [ tags[2] ]).pluck(:title).sort).to eq %w[] }
-    it { expect(TestPost.where(where_key => [ tags[3] ]).pluck(:title).sort).to eq %w[] }
-    it { expect(TestPost.where(where_key => [ tags[0], tags[1] ]).pluck(:title).sort).to eq %w[A] }
-    it { expect(TestPost.where(where_key => [ tags[1], tags[2] ]).pluck(:title).sort).to eq %w[B] }
-    it { expect(TestPost.where(where_key => [ tags[2], tags[3] ]).pluck(:title).sort).to eq %w[] }
-    it { expect(TestPost.where(where_key => [ tags[3], tags[4] ]).pluck(:title).sort).to eq %w[] }
-    it { expect(TestPost.where(where_key => [ tags[0], tags[1], tags[2] ]).pluck(:title).sort).to eq %w[A B] }
-    it { expect(TestPost.where(where_key => [ tags[1], tags[2], tags[3] ]).pluck(:title).sort).to eq %w[B] }
+    it { expect(where_method.call(where_key, [ tags[0] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[1] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[2] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[3] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[0], tags[1] ]).pluck(:title).sort).to eq %w[A] }
+    it { expect(where_method.call(where_key, [ tags[1], tags[2] ]).pluck(:title).sort).to eq %w[B] }
+    it { expect(where_method.call(where_key, [ tags[2], tags[3] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[3], tags[4] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[0], tags[1], tags[2] ]).pluck(:title).sort).to eq %w[A B] }
+    it { expect(where_method.call(where_key, [ tags[1], tags[2], tags[3] ]).pluck(:title).sort).to eq %w[B] }
   end
 
-  shared_examples 'tags_eq' do |column|
+  shared_examples 'tags_eq' do |column, where_method|
     let(:where_key) { "#{column}_eq" }
     let(:tags) { column == 'integers' ? integer_tags : uuid_tags }
 
     before { setup(column, tags) }
 
-    it { expect(TestPost.where(where_key => [ tags[0] ]).pluck(:title).sort).to eq %w[] }
-    it { expect(TestPost.where(where_key => [ tags[1] ]).pluck(:title).sort).to eq %w[] }
-    it { expect(TestPost.where(where_key => [ tags[2] ]).pluck(:title).sort).to eq %w[] }
-    it { expect(TestPost.where(where_key => [ tags[3] ]).pluck(:title).sort).to eq %w[] }
-    it { expect(TestPost.where(where_key => [ tags[0], tags[1] ]).pluck(:title).sort).to eq %w[A] }
-    it { expect(TestPost.where(where_key => [ tags[1], tags[2] ]).pluck(:title).sort).to eq %w[B] }
-    it { expect(TestPost.where(where_key => [ tags[2], tags[3] ]).pluck(:title).sort).to eq %w[] }
-    it { expect(TestPost.where(where_key => [ tags[3], tags[4] ]).pluck(:title).sort).to eq %w[] }
-    it { expect(TestPost.where(where_key => [ tags[0], tags[1], tags[2] ]).pluck(:title).sort).to eq %w[] }
-    it { expect(TestPost.where(where_key => [ tags[1], tags[2], tags[3] ]).pluck(:title).sort).to eq %w[] }
-    it { expect(TestPost.where(where_key => [ tags[1], tags[0] ]).pluck(:title).sort).to eq %w[A] }
-    it { expect(TestPost.where(where_key => [ tags[2], tags[1] ]).pluck(:title).sort).to eq %w[B] }
+    it { expect(where_method.call(where_key, [ tags[0] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[1] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[2] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[3] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[0], tags[1] ]).pluck(:title).sort).to eq %w[A] }
+    it { expect(where_method.call(where_key, [ tags[1], tags[2] ]).pluck(:title).sort).to eq %w[B] }
+    it { expect(where_method.call(where_key, [ tags[2], tags[3] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[3], tags[4] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[0], tags[1], tags[2] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[1], tags[2], tags[3] ]).pluck(:title).sort).to eq %w[] }
+    it { expect(where_method.call(where_key, [ tags[1], tags[0] ]).pluck(:title).sort).to eq %w[A] }
+    it { expect(where_method.call(where_key, [ tags[2], tags[1] ]).pluck(:title).sort).to eq %w[B] }
   end
 
   describe '.where' do
+    where = ->(where_key, tags) { TestPost.where(where_key => tags) }
+    scope = ->(where_key, tags) { TestPost.public_send(where_key, tags) }
+    scope_string = ->(where_key, tags) { TestPost.public_send(where_key, tags.join(',')) }
+    scope_string_with_delimiter = ->(where_key, tags) { TestPost.public_send(where_key, tags.join('|'), '|') }
+
     context 'when no tag conditions' do
       before { setup(:strings, tags) }
 
@@ -101,35 +106,43 @@ describe PgTaggable::Taggable do
     end
 
     context 'when any_tags' do
-      it_behaves_like 'any_tags', 'strings'
-      it_behaves_like 'any_tags', 'citexts'
-      it_behaves_like 'any_tags', 'uuids'
-      it_behaves_like 'any_tags', 'texts'
-      it_behaves_like 'any_tags', 'integers'
+      [ where, scope, scope_string, scope_string_with_delimiter ].each do |method|
+        it_behaves_like 'any_tags', 'strings', method
+        it_behaves_like 'any_tags', 'citexts', method
+        it_behaves_like 'any_tags', 'uuids', method
+        it_behaves_like 'any_tags', 'texts', method
+        it_behaves_like 'any_tags', 'integers', method
+      end
     end
 
     context 'when all_tags' do
-      it_behaves_like 'all_tags', 'strings'
-      it_behaves_like 'all_tags', 'citexts'
-      it_behaves_like 'all_tags', 'uuids'
-      it_behaves_like 'all_tags', 'texts'
-      it_behaves_like 'all_tags', 'integers'
+      [ where, scope, scope_string, scope_string_with_delimiter ].each do |method|
+        it_behaves_like 'all_tags', 'strings', method
+        it_behaves_like 'all_tags', 'citexts', method
+        it_behaves_like 'all_tags', 'uuids', method
+        it_behaves_like 'all_tags', 'texts', method
+        it_behaves_like 'all_tags', 'integers', method
+      end
     end
 
     context 'when tags_in' do
-      it_behaves_like 'tags_in', 'strings'
-      it_behaves_like 'tags_in', 'citexts'
-      it_behaves_like 'tags_in', 'uuids'
-      it_behaves_like 'tags_in', 'texts'
-      it_behaves_like 'tags_in', 'integers'
+      [ where, scope, scope_string, scope_string_with_delimiter ].each do |method|
+        it_behaves_like 'tags_in', 'strings', method
+        it_behaves_like 'tags_in', 'citexts', method
+        it_behaves_like 'tags_in', 'uuids', method
+        it_behaves_like 'tags_in', 'texts', method
+        it_behaves_like 'tags_in', 'integers', method
+      end
     end
 
     context 'when tags_eq' do
-      it_behaves_like 'tags_eq', 'strings'
-      it_behaves_like 'tags_eq', 'citexts'
-      it_behaves_like 'tags_eq', 'uuids'
-      it_behaves_like 'tags_eq', 'texts'
-      it_behaves_like 'tags_eq', 'integers'
+      [ where, scope, scope_string, scope_string_with_delimiter ].each do |method|
+        it_behaves_like 'tags_eq', 'strings', method
+        it_behaves_like 'tags_eq', 'citexts', method
+        it_behaves_like 'tags_eq', 'uuids', method
+        it_behaves_like 'tags_eq', 'texts', method
+        it_behaves_like 'tags_eq', 'integers', method
+      end
     end
 
     context 'when combine' do
@@ -147,51 +160,56 @@ describe PgTaggable::Taggable do
     end
 
     context 'when tag conditions' do
-      it { expect(TestPost.where.not(any_strings: [ tags[0] ]).pluck(:title).sort).to eq %w[B] }
-      it { expect(TestPost.where.not(any_strings: [ tags[1] ]).pluck(:title).sort).to eq %w[] }
-      it { expect(TestPost.where.not(any_strings: [ tags[2] ]).pluck(:title).sort).to eq %w[A] }
-      it { expect(TestPost.where.not(any_strings: [ tags[3] ]).pluck(:title).sort).to eq %w[A B] }
-      it { expect(TestPost.where.not(any_strings: [ tags[0], tags[1] ]).pluck(:title).sort).to eq %w[] }
-      it { expect(TestPost.where.not(any_strings: [ tags[1], tags[2] ]).pluck(:title).sort).to eq %w[] }
-      it { expect(TestPost.where.not(any_strings: [ tags[2], tags[3] ]).pluck(:title).sort).to eq %w[A] }
-      it { expect(TestPost.where.not(any_strings: [ tags[3], tags[4] ]).pluck(:title).sort).to eq %w[A B] }
-      it { expect(TestPost.where.not(any_strings: [ tags[0], tags[1], tags[2] ]).pluck(:title).sort).to eq %w[] }
-      it { expect(TestPost.where.not(any_strings: [ tags[1], tags[2], tags[3] ]).pluck(:title).sort).to eq %w[] }
+      where_not = ->(where_key, tags) { TestPost.where.not(where_key => tags) }
+      not_scope = ->(where_key, tags) { TestPost.public_send("not_#{where_key}", tags) }
 
-      it { expect(TestPost.where.not(all_strings: [ tags[0] ]).pluck(:title).sort).to eq %w[B] }
-      it { expect(TestPost.where.not(all_strings: [ tags[1] ]).pluck(:title).sort).to eq %w[] }
-      it { expect(TestPost.where.not(all_strings: [ tags[2] ]).pluck(:title).sort).to eq %w[A] }
-      it { expect(TestPost.where.not(all_strings: [ tags[3] ]).pluck(:title).sort).to eq %w[A B] }
-      it { expect(TestPost.where.not(all_strings: [ tags[0], tags[1] ]).pluck(:title).sort).to eq %w[B] }
-      it { expect(TestPost.where.not(all_strings: [ tags[1], tags[2] ]).pluck(:title).sort).to eq %w[A] }
-      it { expect(TestPost.where.not(all_strings: [ tags[2], tags[3] ]).pluck(:title).sort).to eq %w[A B] }
-      it { expect(TestPost.where.not(all_strings: [ tags[3], tags[4] ]).pluck(:title).sort).to eq %w[A B] }
-      it { expect(TestPost.where.not(all_strings: [ tags[0], tags[1], tags[2] ]).pluck(:title).sort).to eq %w[A B] }
-      it { expect(TestPost.where.not(all_strings: [ tags[1], tags[2], tags[3] ]).pluck(:title).sort).to eq %w[A B] }
+      [ where_not, not_scope ].each do |method|
+        it { expect(method.call(:any_strings, [ tags[0] ]).pluck(:title).sort).to eq %w[B] }
+        it { expect(method.call(:any_strings, [ tags[1] ]).pluck(:title).sort).to eq %w[] }
+        it { expect(method.call(:any_strings, [ tags[2] ]).pluck(:title).sort).to eq %w[A] }
+        it { expect(method.call(:any_strings, [ tags[3] ]).pluck(:title).sort).to eq %w[A B] }
+        it { expect(method.call(:any_strings, [ tags[0], tags[1] ]).pluck(:title).sort).to eq %w[] }
+        it { expect(method.call(:any_strings, [ tags[1], tags[2] ]).pluck(:title).sort).to eq %w[] }
+        it { expect(method.call(:any_strings, [ tags[2], tags[3] ]).pluck(:title).sort).to eq %w[A] }
+        it { expect(method.call(:any_strings, [ tags[3], tags[4] ]).pluck(:title).sort).to eq %w[A B] }
+        it { expect(method.call(:any_strings, [ tags[0], tags[1], tags[2] ]).pluck(:title).sort).to eq %w[] }
+        it { expect(method.call(:any_strings, [ tags[1], tags[2], tags[3] ]).pluck(:title).sort).to eq %w[] }
 
-      it { expect(TestPost.where.not(strings_in: [ tags[0] ]).pluck(:title).sort).to eq %w[A B] }
-      it { expect(TestPost.where.not(strings_in: [ tags[1] ]).pluck(:title).sort).to eq %w[A B] }
-      it { expect(TestPost.where.not(strings_in: [ tags[2] ]).pluck(:title).sort).to eq %w[A B] }
-      it { expect(TestPost.where.not(strings_in: [ tags[3] ]).pluck(:title).sort).to eq %w[A B] }
-      it { expect(TestPost.where.not(strings_in: [ tags[0], tags[1] ]).pluck(:title).sort).to eq %w[B] }
-      it { expect(TestPost.where.not(strings_in: [ tags[1], tags[2] ]).pluck(:title).sort).to eq %w[A] }
-      it { expect(TestPost.where.not(strings_in: [ tags[2], tags[3] ]).pluck(:title).sort).to eq %w[A B] }
-      it { expect(TestPost.where.not(strings_in: [ tags[3], tags[4] ]).pluck(:title).sort).to eq %w[A B] }
-      it { expect(TestPost.where.not(strings_in: [ tags[0], tags[1], tags[2] ]).pluck(:title).sort).to eq %w[] }
-      it { expect(TestPost.where.not(strings_in: [ tags[1], tags[2], tags[3] ]).pluck(:title).sort).to eq %w[A] }
+        it { expect(method.call(:all_strings, [ tags[0] ]).pluck(:title).sort).to eq %w[B] }
+        it { expect(method.call(:all_strings, [ tags[1] ]).pluck(:title).sort).to eq %w[] }
+        it { expect(method.call(:all_strings, [ tags[2] ]).pluck(:title).sort).to eq %w[A] }
+        it { expect(method.call(:all_strings, [ tags[3] ]).pluck(:title).sort).to eq %w[A B] }
+        it { expect(method.call(:all_strings, [ tags[0], tags[1] ]).pluck(:title).sort).to eq %w[B] }
+        it { expect(method.call(:all_strings, [ tags[1], tags[2] ]).pluck(:title).sort).to eq %w[A] }
+        it { expect(method.call(:all_strings, [ tags[2], tags[3] ]).pluck(:title).sort).to eq %w[A B] }
+        it { expect(method.call(:all_strings, [ tags[3], tags[4] ]).pluck(:title).sort).to eq %w[A B] }
+        it { expect(method.call(:all_strings, [ tags[0], tags[1], tags[2] ]).pluck(:title).sort).to eq %w[A B] }
+        it { expect(method.call(:all_strings, [ tags[1], tags[2], tags[3] ]).pluck(:title).sort).to eq %w[A B] }
 
-      it { expect(TestPost.where.not(strings_eq: [ tags[0] ]).pluck(:title).sort).to eq %w[A B] }
-      it { expect(TestPost.where.not(strings_eq: [ tags[1] ]).pluck(:title).sort).to eq %w[A B] }
-      it { expect(TestPost.where.not(strings_eq: [ tags[2] ]).pluck(:title).sort).to eq %w[A B] }
-      it { expect(TestPost.where.not(strings_eq: [ tags[3] ]).pluck(:title).sort).to eq %w[A B] }
-      it { expect(TestPost.where.not(strings_eq: [ tags[0], tags[1] ]).pluck(:title).sort).to eq %w[B] }
-      it { expect(TestPost.where.not(strings_eq: [ tags[1], tags[2] ]).pluck(:title).sort).to eq %w[A] }
-      it { expect(TestPost.where.not(strings_eq: [ tags[2], tags[3] ]).pluck(:title).sort).to eq %w[A B] }
-      it { expect(TestPost.where.not(strings_eq: [ tags[3], tags[4] ]).pluck(:title).sort).to eq %w[A B] }
-      it { expect(TestPost.where.not(strings_eq: [ tags[0], tags[1], tags[2] ]).pluck(:title).sort).to eq %w[A B] }
-      it { expect(TestPost.where.not(strings_eq: [ tags[1], tags[2], tags[3] ]).pluck(:title).sort).to eq %w[A B] }
-      it { expect(TestPost.where.not(strings_eq: [ tags[1], tags[0] ]).pluck(:title).sort).to eq %w[B] }
-      it { expect(TestPost.where.not(strings_eq: [ tags[2], tags[1] ]).pluck(:title).sort).to eq %w[A] }
+        it { expect(method.call(:strings_in, [ tags[0] ]).pluck(:title).sort).to eq %w[A B] }
+        it { expect(method.call(:strings_in, [ tags[1] ]).pluck(:title).sort).to eq %w[A B] }
+        it { expect(method.call(:strings_in, [ tags[2] ]).pluck(:title).sort).to eq %w[A B] }
+        it { expect(method.call(:strings_in, [ tags[3] ]).pluck(:title).sort).to eq %w[A B] }
+        it { expect(method.call(:strings_in, [ tags[0], tags[1] ]).pluck(:title).sort).to eq %w[B] }
+        it { expect(method.call(:strings_in, [ tags[1], tags[2] ]).pluck(:title).sort).to eq %w[A] }
+        it { expect(method.call(:strings_in, [ tags[2], tags[3] ]).pluck(:title).sort).to eq %w[A B] }
+        it { expect(method.call(:strings_in, [ tags[3], tags[4] ]).pluck(:title).sort).to eq %w[A B] }
+        it { expect(method.call(:strings_in, [ tags[0], tags[1], tags[2] ]).pluck(:title).sort).to eq %w[] }
+        it { expect(method.call(:strings_in, [ tags[1], tags[2], tags[3] ]).pluck(:title).sort).to eq %w[A] }
+
+        it { expect(method.call(:strings_eq, [ tags[0] ]).pluck(:title).sort).to eq %w[A B] }
+        it { expect(method.call(:strings_eq, [ tags[1] ]).pluck(:title).sort).to eq %w[A B] }
+        it { expect(method.call(:strings_eq, [ tags[2] ]).pluck(:title).sort).to eq %w[A B] }
+        it { expect(method.call(:strings_eq, [ tags[3] ]).pluck(:title).sort).to eq %w[A B] }
+        it { expect(method.call(:strings_eq, [ tags[0], tags[1] ]).pluck(:title).sort).to eq %w[B] }
+        it { expect(method.call(:strings_eq, [ tags[1], tags[2] ]).pluck(:title).sort).to eq %w[A] }
+        it { expect(method.call(:strings_eq, [ tags[2], tags[3] ]).pluck(:title).sort).to eq %w[A B] }
+        it { expect(method.call(:strings_eq, [ tags[3], tags[4] ]).pluck(:title).sort).to eq %w[A B] }
+        it { expect(method.call(:strings_eq, [ tags[0], tags[1], tags[2] ]).pluck(:title).sort).to eq %w[A B] }
+        it { expect(method.call(:strings_eq, [ tags[1], tags[2], tags[3] ]).pluck(:title).sort).to eq %w[A B] }
+        it { expect(method.call(:strings_eq, [ tags[1], tags[0] ]).pluck(:title).sort).to eq %w[B] }
+        it { expect(method.call(:strings_eq, [ tags[2], tags[1] ]).pluck(:title).sort).to eq %w[A] }
+      end
     end
   end
 

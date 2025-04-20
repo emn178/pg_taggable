@@ -87,12 +87,6 @@ Find records that have exact same tags as the list, order is not important
 Post.where(tags_eq: ['food', 'travel'])
 ```
 
-#### #{tag_name}
-Find records that have exact same tags as the list, order is important. This is the default behavior.
-```Ruby
-Post.where(tags: ['food', 'travel'])
-```
-
 Assume a post has tags: 'A', 'B'
 |Method|Query|Matched|
 |-|-|-|
@@ -112,10 +106,6 @@ Assume a post has tags: 'A', 'B'
 |tags_eq|A, B|True|
 |tags_eq|B, A|True|
 |tags_eq|A, B, C|False|
-|tags|A|False|
-|tags|A, B|True|
-|tags|B, A|False|
-|tags|A, B, C|False|
 
 ### Class Methods
 #### taggable(name, unique: true)
@@ -175,6 +165,77 @@ Post.count_tags
 Post.tags.group(:tag).count
 ```
 
+#### any_#{tag_name}(value, delimiter = ',')
+It will create some scopes, this is useful for using ransack
+```Ruby
+Post.any_tags(['food', 'travel'])
+
+# equal to
+Post.where(any_tags: ['food', 'travel'])
+```
+
+Scope support string input
+```Ruby
+Post.any_tags('food,travel')
+Post.any_tags('food|travel', '|')
+```
+
+#### all_#{tag_name}(value, delimiter = ',')
+```Ruby
+Post.all_tags(['food', 'travel'])
+
+# equal to
+Post.where(all_tags: ['food', 'travel'])
+```
+
+#### #{tag_name}_in(value, delimiter = ',')
+```Ruby
+Post.tags_in(['food', 'travel'])
+
+# equal to
+Post.where(tags_in: ['food', 'travel'])
+```
+
+#### #{tag_name}_eq(value, delimiter = ',')
+```Ruby
+Post.tags_eq(['food', 'travel'])
+
+# equal to
+Post.where(tags_eq: ['food', 'travel'])
+```
+
+#### not_any_#{tag_name}(value, delimiter = ',')
+```Ruby
+Post.not_any_tags(['food', 'travel'])
+
+# equal to
+Post.where.not(any_tags: ['food', 'travel'])
+```
+
+#### not_all_#{tag_name}(value, delimiter = ',')
+```Ruby
+Post.not_all_tags(['food', 'travel'])
+
+# equal to
+Post.where.not(all_tags: ['food', 'travel'])
+```
+
+#### not_#{tag_name}_in(value, delimiter = ',')
+```Ruby
+Post.not_tags_in(['food', 'travel'])
+
+# equal to
+Post.where.not(tags_in: ['food', 'travel'])
+```
+
+#### not_#{tag_name}_eq(value, delimiter = ',')
+```Ruby
+Post.not_tags_eq(['food', 'travel'])
+
+# equal to
+Post.where.not(tags_eq: ['food', 'travel'])
+```
+
 ### Case Insensitive
 If you use `string` type, it is case sensitive.
 ```Ruby
@@ -207,6 +268,21 @@ You will get the diffent result
 post = Post.create(tags: ['food', 'travel', 'Food'])
 post.tags
 # => ['food', 'travel']
+```
+
+### Ransack
+You can use with ransack
+```Ruby
+class Post < ActiveRecord::Base
+  def self.ransackable_scopes(_auth_object = nil)
+    %i[all_tags]
+  end
+end
+```
+
+And you can search
+```Ruby
+Post.ransack(all_tags: 'foold,travel')
 ```
 
 ## License
