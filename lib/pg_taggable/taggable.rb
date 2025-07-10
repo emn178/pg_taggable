@@ -34,7 +34,8 @@ module PgTaggable
       end
 
       scope name, -> { unscope(:where).from(select("UNNEST(#{table_name}.#{name}) AS tag"), table_name) }
-      scope "uniq_#{name}", -> { public_send(name).distinct.pluck(:tag) }
+      scope "distinct_#{name}", -> { public_send(name).select(:tag).distinct }
+      scope "uniq_#{name}", -> { public_send("distinct_#{name}").pluck(:tag) }
       scope "count_#{name}", -> { public_send(name).group(:tag).count }
       taggable_attributes.keys.each do |key|
         scope key, ->(value, delimiter = ',') { where(key => value.is_a?(Array) ? value : value.split(delimiter)) }

@@ -135,7 +135,7 @@ Post.tags
 Post.tags.size
 # => 4
 
-Post.tags.distinct.size
+Post.tags.select(:tag).distinct.size
 # => 3
 
 Post.tags.distinct.pluck(:tag)
@@ -143,6 +143,16 @@ Post.tags.distinct.pluck(:tag)
 
 Post.tags.group(:tag).count
 # => {"food"=>1, "travel"=>2, "technology"=>1}
+```
+
+#### distinct_#{tag_name}
+Return an array of distinct tag records. It can be used for paging, count or other query.
+```Ruby
+Post.distinct_tags
+# => #<ActiveRecord::Relation [#<Post tag: "food", id: nil>, #<Post tag: "travel", id: nil>, #<Post tag: "technology", id: nil>]>
+
+# equal to
+Post.tags.select(:tag).distinct
 ```
 
 #### uniq_#{tag_name}

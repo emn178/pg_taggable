@@ -213,6 +213,12 @@ describe PgTaggable::Taggable do
     end
   end
 
+  describe '.distinct_tags' do
+    before { setup(:strings, tags) }
+
+    it { expect(TestPost.distinct_strings.size).to eq 3 }
+  end
+
   describe '.uniq_tags' do
     before { setup(:strings, tags) }
 
